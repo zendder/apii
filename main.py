@@ -5714,16 +5714,12 @@ MOVIE_ROOM_HTML = """
                     <button class="control-btn" onclick="pauseEveryone()" style="flex: 1;">
                         ⏸ Pause
                     </button>
-                    <button class="control-btn" onclick="syncViewersToCurrentTime()" style="flex: 1;">
-                        🔄 Sync
-                    </button>
                 </div>
                 <div style="padding-top: 15px; border-top: 1px solid #27272a;">
-                    <label style="font-size: 12px; color: #71717a;">Jump viewers to timestamp (seconds):</label>
-                    <div style="display: flex; gap: 8px; margin-top: 8px;">
-                        <input type="number" id="jumpTimestamp" placeholder="e.g. 120" style="flex: 1; padding: 10px; background: #111; border: 1px solid #27272a; border-radius: 6px; color: #e4e4e7; font-size: 13px;">
-                        <button class="control-btn" onclick="jumpViewersToTime()" style="min-width: 80px;">⏩ Jump</button>
-                    </div>
+                    <p style="margin: 0; font-size: 12px; color: #71717a; line-height: 1.5;">
+                        <strong style="color: #a1a1aa;">ℹ️ How to Watch Together:</strong><br>
+                        Timestamp sync is not possible due to VidLink's progress tracking. To watch at the same time, pick a movie or show and it will start at the same time for everyone. Use Play/Pause buttons to control playback together.
+                    </p>
                 </div>
             </div>
         </div>
@@ -5958,11 +5954,18 @@ MOVIE_ROOM_HTML = """
             */
             
             // Receive manual host control commands (viewers only)
-        // Viewer sync - reload player at host's timestamp with play/pause control
+        // Viewer control - reload player with play/pause control only
         socket.on('host_control_sync', function(data) {
             if (!isHost && currentMediaData) {
                 const timestamp = data.timestamp;
-                const action = data.action || 'sync';
+                const action = data.action || 'play';
+                
+                // Only process play and pause actions
+                if (action !== 'play' && action !== 'pause') {
+                    console.log('⚠️ Ignoring unsupported action:', action);
+                    return;
+                }
+                
                 console.log('🔄 Viewer received:', action, 'at', timestamp, 's');
                 
                 // Find the player wrapper by class (more reliable than parentElement)
@@ -6189,50 +6192,6 @@ MOVIE_ROOM_HTML = """
             moviePlayer = newIframe;
         }
         
-        function syncViewersToCurrentTime() {
-            if (!currentMediaData) {
-                showControlFeedback('❌ No media playing');
-                return;
-            }
-            const now = Date.now();
-            if (now - lastSyncTime < SYNC_COOLDOWN) {
-                showControlFeedback('⏳ Wait 3 seconds between syncs');
-                return;
-            }
-            lastSyncTime = now;
-            socket.emit('host_control', {
-                room: roomId,
-                action: 'sync',
-                timestamp: hostCurrentTime
-            });
-            showControlFeedback('🔄 Syncing to ' + Math.floor(hostCurrentTime) + 's');
-        }
-        
-        function jumpViewersToTime() {
-            const input = document.getElementById('jumpTimestamp');
-            const time = parseInt(input.value);
-            if (isNaN(time) || time < 0) {
-                showControlFeedback('❌ Invalid timestamp');
-                return;
-            }
-            if (!currentMediaData) {
-                showControlFeedback('❌ No media playing');
-                return;
-            }
-            const now = Date.now();
-            if (now - lastSyncTime < SYNC_COOLDOWN) {
-                showControlFeedback('⏳ Wait 3 seconds between syncs');
-                return;
-            }
-            lastSyncTime = now;
-            socket.emit('host_control', {
-                room: roomId,
-                action: 'jump',
-                timestamp: time
-            });
-            showControlFeedback('⏩ Jumping to ' + time + 's');
-            input.value = '';
-        }
         
         socket.on('player_closed', function() {
             closePlayerLocal();
