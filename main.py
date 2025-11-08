@@ -5718,7 +5718,7 @@ MOVIE_ROOM_HTML = """
                 <div style="padding-top: 15px; border-top: 1px solid #27272a;">
                     <p style="margin: 0; font-size: 12px; color: #71717a; line-height: 1.5;">
                         <strong style="color: #a1a1aa;">ℹ️ How to Watch Together:</strong><br>
-                        Timestamp sync is not possible due to VidLink's progress tracking. To watch at the same time, pick a movie or show and it will start at the same time for everyone. Use Play/Pause buttons to control playback together.
+                        Timestamp sync is not possible. To watch at the same time, pick a movie or show and it will start at the same time for everyone. Use Play/Pause buttons to control playback together.
                     </p>
                 </div>
             </div>
