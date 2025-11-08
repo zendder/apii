@@ -5305,6 +5305,7 @@ MOVIE_ROOM_HTML = """
             padding: clamp(16px, 3vw, 20px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             background: rgba(15, 15, 15, 0.5);
+            position: relative;
         }
         
         .chat-header-title {
@@ -5312,6 +5313,34 @@ MOVIE_ROOM_HTML = """
             align-items: center;
             gap: 10px;
             margin-bottom: 12px;
+        }
+        
+        .chat-close-mobile {
+            display: none;
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: rgba(39, 39, 42, 0.8);
+            color: #a1a1aa;
+            font-size: 24px;
+            line-height: 1;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        
+        .chat-close-mobile:hover {
+            background: rgba(63, 63, 70, 0.9);
+            color: #fafafa;
+            transform: scale(1.05);
+        }
+        
+        .chat-close-mobile:active {
+            transform: scale(0.95);
         }
         
         .chat-header h3 {
@@ -5621,6 +5650,10 @@ MOVIE_ROOM_HTML = """
             .chat-toggle-btn {
                 display: block !important;
             }
+            
+            .chat-close-mobile {
+                display: block;
+            }
         }
         
         @media (max-width: 768px) {
@@ -5643,6 +5676,130 @@ MOVIE_ROOM_HTML = """
             
             #chat-section {
                 width: 100%;
+            }
+            
+            .player-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                margin-bottom: 12px;
+            }
+            
+            #nowPlaying {
+                font-size: 16px;
+            }
+            
+            .player-actions {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+            
+            .server-btn {
+                flex: 1;
+                min-width: 80px;
+                font-size: 13px;
+                padding: 10px 12px;
+            }
+            
+            .close-player-btn {
+                flex: 1;
+                min-width: 100px;
+                margin-left: 0;
+                font-size: 13px;
+                padding: 10px 12px;
+            }
+            
+            .search-container {
+                margin-bottom: 20px;
+            }
+            
+            .search-box input {
+                font-size: 14px;
+                padding: 12px 40px 12px 16px;
+            }
+            
+            #player-container {
+                margin-bottom: 20px;
+            }
+            
+            .player-wrapper {
+                border-radius: 6px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .content-area {
+                padding: 12px 10px;
+            }
+            
+            .header {
+                padding: 12px 15px;
+            }
+            
+            .title-section h1 {
+                font-size: 16px;
+            }
+            
+            .logo-icon {
+                font-size: 20px;
+            }
+            
+            .room-id {
+                font-size: 10px;
+                padding: 4px 8px;
+            }
+            
+            .role-badge {
+                font-size: 9px;
+                padding: 4px 8px;
+            }
+            
+            .player-header {
+                gap: 10px;
+            }
+            
+            #nowPlaying {
+                font-size: 14px;
+            }
+            
+            .player-actions {
+                gap: 8px;
+            }
+            
+            .server-btn,
+            .close-player-btn {
+                font-size: 12px;
+                padding: 8px 10px;
+            }
+            
+            .search-box input {
+                font-size: 13px;
+                padding: 10px 36px 10px 14px;
+            }
+            
+            .section h2 {
+                font-size: 16px;
+                margin-bottom: 12px;
+            }
+            
+            .movie-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 12px;
+            }
+            
+            .copy-link-btn,
+            .chat-toggle-btn,
+            .delete-room-btn {
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+            
+            .chat-close-mobile {
+                width: 32px;
+                height: 32px;
+                font-size: 20px;
+                top: 14px;
+                right: 14px;
             }
         }
     </style>
@@ -5671,24 +5828,6 @@ MOVIE_ROOM_HTML = """
             <div class="content-area">
         
         {% if is_host %}
-        <div class="search-container">
-            <div class="search-box">
-                <input type="text" id="movieSearch" placeholder="Search for movies and TV shows...">
-                <i class="fas fa-search search-icon"></i>
-                <div id="searchLoader">
-                    <div class="spinner"></div>
-                </div>
-                <div id="searchResults"></div>
-            </div>
-        </div>
-        {% else %}
-        <div id="waiting-for-host" style="text-align: center; padding: 60px 20px; color: #71717a;">
-            <div style="font-size: 48px; margin-bottom: 20px;">🍿</div>
-            <h2 style="font-size: 24px; color: #e4e4e7; margin-bottom: 10px;">Waiting for Host</h2>
-            <p style="font-size: 16px;">The host will select a movie or TV show to watch together.</p>
-        </div>
-        {% endif %}
-        
         <div id="player-container">
             <div class="player-header">
                 <div id="nowPlaying">Now Playing</div>
@@ -5750,6 +5889,23 @@ MOVIE_ROOM_HTML = """
             <h2>Trending Movies</h2>
             <div class="movie-grid" id="trendingGrid"></div>
         </div>
+        
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="movieSearch" placeholder="Search for movies and TV shows...">
+                <i class="fas fa-search search-icon"></i>
+                <div id="searchLoader">
+                    <div class="spinner"></div>
+                </div>
+                <div id="searchResults"></div>
+            </div>
+        </div>
+        {% else %}
+        <div id="waiting-for-host" style="text-align: center; padding: 60px 20px; color: #71717a;">
+            <div style="font-size: 48px; margin-bottom: 20px;">🍿</div>
+            <h2 style="font-size: 24px; color: #e4e4e7; margin-bottom: 10px;">Waiting for Host</h2>
+            <p style="font-size: 16px;">The host will select a movie or TV show to watch together.</p>
+        </div>
         {% endif %}
         
             </div><!-- End content-area -->
@@ -5763,6 +5919,7 @@ MOVIE_ROOM_HTML = """
                             <span class="viewer-count-number" id="viewer-count">0</span>
                         </div>
                     </div>
+                    <button class="chat-close-mobile" onclick="toggleChat()" title="Close chat">✕</button>
                     <div class="user-list" id="user-list"></div>
                 </div>
                 <div id="chat-messages"></div>
