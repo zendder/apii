@@ -5878,6 +5878,7 @@ MOVIE_ROOM_HTML = """
             </div>
             {% endif %}
         </div>
+        {% endif %}
         
         {% if is_host %}
         <div class="section" id="continueWatchingSection" style="display: none;">
