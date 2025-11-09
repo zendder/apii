@@ -1883,6 +1883,147 @@ WATCH_HTML = """
             cursor: not-allowed;
         }
         
+        .control-btn.small {
+            padding: 8px 12px;
+            font-size: 11px;
+        }
+        
+        .queue-controls {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .queue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .queue-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fafafa;
+        }
+        
+        .queue-panel {
+            margin-top: 16px;
+        }
+        
+        .queue-add {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .queue-add input {
+            flex: 1;
+            padding: 10px 12px;
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 6px;
+            color: #fafafa;
+            font-size: 13px;
+        }
+        
+        .queue-add input:focus {
+            outline: none;
+            border-color: #3f3f46;
+        }
+        
+        .queue-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 16px;
+        }
+        
+        .queue-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .queue-item:hover {
+            background: #1f1f23;
+            border-color: #3f3f46;
+        }
+        
+        .queue-item.current {
+            background: #1e293b;
+            border-color: #334155;
+        }
+        
+        .queue-item-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .queue-item-number {
+            font-weight: 600;
+            color: #71717a;
+            min-width: 24px;
+        }
+        
+        .queue-item-url {
+            color: #a1a1aa;
+            font-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .queue-item-badge {
+            background: #3b82f6;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .queue-item-remove {
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.2s ease;
+        }
+        
+        .queue-item-remove:hover {
+            background: #b91c1c;
+        }
+        
+        .queue-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .queue-position {
+            font-size: 14px;
+            font-weight: 600;
+            color: #a1a1aa;
+        }
+        
         .vm-controls {
             background: #0a0a0a;
             border: 1px solid #1a1a1a;
@@ -3135,6 +3276,51 @@ WATCH_HTML = """
                                     Fullscreen
                                 </button>
                             </div>
+                            
+                            <div class="queue-controls">
+                                <div class="queue-header">
+                                    <span class="queue-title">🎬 Video Queue (<span id="queue-count">{{ video_queue|length }}</span>)</span>
+                                    <button class="control-btn small" onclick="toggleQueuePanel()">
+                                        <span id="queue-toggle-icon">▼</span>
+                                    </button>
+                                </div>
+                                
+                                <div class="queue-panel" id="queue-panel" style="display: none;">
+                                    <div class="queue-add">
+                                        <input type="text" id="queue-url-input" placeholder="Enter video URL to add to queue" />
+                                        <button class="control-btn primary small" onclick="addToQueue()">Add</button>
+                                    </div>
+                                    
+                                    <div class="queue-list" id="queue-list">
+                                        {% for url in video_queue %}
+                                        <div class="queue-item {% if loop.index0 == current_video_index %}current{% endif %}" data-index="{{ loop.index0 }}">
+                                            <div class="queue-item-info">
+                                                <span class="queue-item-number">{{ loop.index }}</span>
+                                                <span class="queue-item-url">{{ url[:50] }}{% if url|length > 50 %}...{% endif %}</span>
+                                                {% if loop.index0 == current_video_index %}
+                                                <span class="queue-item-badge">▶ Now Playing</span>
+                                                {% endif %}
+                                            </div>
+                                            {% if loop.index0 != current_video_index %}
+                                            <button class="queue-item-remove" onclick="removeFromQueue({{ loop.index0 }})">×</button>
+                                            {% endif %}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <div class="queue-navigation">
+                                        <button class="control-btn" onclick="previousVideo()" id="prev-btn">
+                                            ⏮ Previous
+                                        </button>
+                                        <span class="queue-position">
+                                            <span id="current-position">{{ current_video_index + 1 }}</span> / <span id="total-videos">{{ video_queue|length }}</span>
+                                        </span>
+                                        <button class="control-btn" onclick="nextVideo()" id="next-btn">
+                                            Next ⏭
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         {% else %}
                             <div class="viewer-info">
                                 <div class="icon">👥</div>
@@ -3147,6 +3333,37 @@ WATCH_HTML = """
                                 <button class="control-btn" onclick="toggleFullscreen()">
                                     Fullscreen
                                 </button>
+                            </div>
+                            
+                            <div class="queue-controls">
+                                <div class="queue-header">
+                                    <span class="queue-title">🎬 Video Queue (<span id="queue-count">{{ video_queue|length }}</span>)</span>
+                                    <button class="control-btn small" onclick="toggleQueuePanel()">
+                                        <span id="queue-toggle-icon">▼</span>
+                                    </button>
+                                </div>
+                                
+                                <div class="queue-panel" id="queue-panel" style="display: none;">
+                                    <div class="queue-list" id="queue-list">
+                                        {% for url in video_queue %}
+                                        <div class="queue-item {% if loop.index0 == current_video_index %}current{% endif %}" data-index="{{ loop.index0 }}">
+                                            <div class="queue-item-info">
+                                                <span class="queue-item-number">{{ loop.index }}</span>
+                                                <span class="queue-item-url">{{ url[:50] }}{% if url|length > 50 %}...{% endif %}</span>
+                                                {% if loop.index0 == current_video_index %}
+                                                <span class="queue-item-badge">▶ Now Playing</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <div class="queue-navigation">
+                                        <span class="queue-position">
+                                            <span id="current-position">{{ current_video_index + 1 }}</span> / <span id="total-videos">{{ video_queue|length }}</span>
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         {% endif %}
                         
@@ -4563,7 +4780,39 @@ WATCH_HTML = """
                 log(`Seeked: ${Math.round(data.time)}s`);
                 video.currentTime = data.time;
             });
+            
+            // Auto-advance to next video when current video ends
+            video.addEventListener('ended', () => {
+                if (isHost) {
+                    log('Video ended, moving to next...');
+                    socket.emit('next_video', { room: roomId });
+                }
+            });
         }
+        
+        // Queue management socket events
+        socket.on('queue_updated', (data) => {
+            log('Queue updated');
+            updateQueueUI(data);
+        });
+        
+        socket.on('load_next_video', (data) => {
+            if (video) {
+                log(`Loading video ${data.index + 1} of ${data.queue.length}`);
+                video.src = data.url;
+                video.currentTime = 0;
+                video.load();
+                updateQueueUI(data);
+            }
+        });
+        
+        socket.on('success', (data) => {
+            log(data.message);
+        });
+        
+        socket.on('info', (data) => {
+            log(data.message);
+        });
         
         // Sports room specific events
         if (roomType === 'sports') {
@@ -4644,6 +4893,85 @@ WATCH_HTML = """
                 } else {
                     document.exitFullscreen();
                 }
+            }
+        }
+
+        // Queue management functions
+        function toggleQueuePanel() {
+            const panel = document.getElementById('queue-panel');
+            const icon = document.getElementById('queue-toggle-icon');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+                icon.textContent = '▲';
+            } else {
+                panel.style.display = 'none';
+                icon.textContent = '▼';
+            }
+        }
+
+        function addToQueue() {
+            if (!isHost) return;
+            
+            const input = document.getElementById('queue-url-input');
+            const url = input.value.trim();
+            
+            if (!url) {
+                log('Please enter a video URL');
+                return;
+            }
+            
+            socket.emit('add_to_queue', {
+                room: roomId,
+                url: url
+            });
+            
+            input.value = '';
+        }
+
+        function nextVideo() {
+            if (!isHost) return;
+            socket.emit('next_video', { room: roomId });
+        }
+
+        function previousVideo() {
+            if (!isHost) return;
+            socket.emit('previous_video', { room: roomId });
+        }
+
+        function removeFromQueue(index) {
+            if (!isHost) return;
+            socket.emit('remove_from_queue', {
+                room: roomId,
+                index: index
+            });
+        }
+
+        function updateQueueUI(data) {
+            const queueList = document.getElementById('queue-list');
+            const queueCount = document.getElementById('queue-count');
+            const currentPosition = document.getElementById('current-position');
+            const totalVideos = document.getElementById('total-videos');
+            
+            if (queueCount) queueCount.textContent = data.queue.length;
+            if (currentPosition) currentPosition.textContent = data.current_index + 1;
+            if (totalVideos) totalVideos.textContent = data.queue.length;
+            
+            if (queueList) {
+                queueList.innerHTML = data.queue.map((url, index) => {
+                    const isCurrent = index === data.current_index;
+                    const truncatedUrl = url.length > 50 ? url.substring(0, 50) + '...' : url;
+                    
+                    return `
+                        <div class="queue-item ${isCurrent ? 'current' : ''}" data-index="${index}">
+                            <div class="queue-item-info">
+                                <span class="queue-item-number">${index + 1}</span>
+                                <span class="queue-item-url">${truncatedUrl}</span>
+                                ${isCurrent ? '<span class="queue-item-badge">▶ Now Playing</span>' : ''}
+                            </div>
+                            ${!isCurrent && isHost ? `<button class="queue-item-remove" onclick="removeFromQueue(${index})">×</button>` : ''}
+                        </div>
+                    `;
+                }).join('');
             }
         }
 
@@ -7225,7 +7553,8 @@ def index():
             rooms[room_id] = {
                 'type': 'cinema',
                 'password': password if password else None,
-                'url': video_url,
+                'video_queue': [video_url],  # List of video URLs
+                'current_video_index': 0,  # Current video in queue
                 'playing': False,
                 'current_time': 0,
                 'last_update': time.time(),
@@ -7474,7 +7803,12 @@ def watch_room(room_id):
     }
     
     if room_type == 'cinema':
-        template_vars['video_url'] = room_data['url']
+        # Get current video from queue
+        current_index = room_data.get('current_video_index', 0)
+        video_queue = room_data.get('video_queue', [])
+        template_vars['video_url'] = video_queue[current_index] if video_queue else ''
+        template_vars['video_queue'] = video_queue
+        template_vars['current_video_index'] = current_index
         return render_template_string(WATCH_HTML, **template_vars)
     elif room_type == 'movie_room':
         return render_template_string(MOVIE_ROOM_HTML, **template_vars)
@@ -7571,6 +7905,11 @@ def on_join(data):
             emit('sync_state', {
                 'playing': room['playing'],
                 'time': current_time
+            })
+            # Send queue info
+            emit('queue_updated', {
+                'queue': room.get('video_queue', []),
+                'current_index': room.get('current_video_index', 0)
             })
         elif room['type'] == 'movie_room':
             # Send current media state to the newly joined user
@@ -7979,6 +8318,200 @@ def on_request_sync(data):
         'playing': room['playing'],
         'time': current_time
     })
+
+@socketio.on('add_to_queue')
+def on_add_to_queue(data):
+    socket_id = request.sid
+    room_id = data.get('room')
+    video_url = data.get('url', '').strip()
+    
+    # Rate limit check
+    if not check_socket_rate_limit(socket_id, 'actions'):
+        emit('error', {'message': 'Too many requests. Please slow down.'})
+        return
+    
+    # Validate session and host permission
+    is_valid, user_info = validate_session_for_room(room_id)
+    if not is_valid or not user_info['is_host']:
+        emit('error', {'message': 'Only the host can add videos to queue'})
+        return
+    
+    # Validate URL
+    if not video_url:
+        emit('error', {'message': 'Video URL is required'})
+        return
+    
+    if not re.match(r'^https?://', video_url):
+        emit('error', {'message': 'Invalid video URL'})
+        return
+    
+    if len(video_url) > 2000:
+        emit('error', {'message': 'Video URL too long'})
+        return
+    
+    with rooms_lock:
+        if room_id not in rooms:
+            return
+        
+        room = rooms[room_id]
+        if room['type'] != 'cinema':
+            return
+        
+        # Add video to queue
+        room['video_queue'].append(video_url)
+        
+        queue_data = {
+            'queue': room['video_queue'],
+            'current_index': room['current_video_index']
+        }
+    
+    # Notify all users about queue update
+    emit('queue_updated', queue_data, room=room_id)
+    emit('success', {'message': 'Video added to queue'})
+
+@socketio.on('next_video')
+def on_next_video(data):
+    socket_id = request.sid
+    room_id = data.get('room')
+    
+    # Rate limit check
+    if not check_socket_rate_limit(socket_id, 'actions'):
+        emit('error', {'message': 'Too many requests. Please slow down.'})
+        return
+    
+    # Validate session and host permission
+    is_valid, user_info = validate_session_for_room(room_id)
+    if not is_valid or not user_info['is_host']:
+        emit('error', {'message': 'Only the host can skip videos'})
+        return
+    
+    with rooms_lock:
+        if room_id not in rooms:
+            return
+        
+        room = rooms[room_id]
+        if room['type'] != 'cinema':
+            return
+        
+        video_queue = room['video_queue']
+        current_index = room['current_video_index']
+        
+        # Check if there's a next video
+        if current_index + 1 < len(video_queue):
+            room['current_video_index'] = current_index + 1
+            room['current_time'] = 0
+            room['playing'] = False
+            room['last_update'] = time.time()
+            
+            next_video_data = {
+                'url': video_queue[room['current_video_index']],
+                'index': room['current_video_index'],
+                'queue': video_queue
+            }
+            
+            # Notify all users to load next video
+            emit('load_next_video', next_video_data, room=room_id)
+        else:
+            emit('info', {'message': 'Queue finished - All videos played'})
+
+@socketio.on('previous_video')
+def on_previous_video(data):
+    socket_id = request.sid
+    room_id = data.get('room')
+    
+    # Rate limit check
+    if not check_socket_rate_limit(socket_id, 'actions'):
+        emit('error', {'message': 'Too many requests. Please slow down.'})
+        return
+    
+    # Validate session and host permission
+    is_valid, user_info = validate_session_for_room(room_id)
+    if not is_valid or not user_info['is_host']:
+        emit('error', {'message': 'Only the host can change videos'})
+        return
+    
+    with rooms_lock:
+        if room_id not in rooms:
+            return
+        
+        room = rooms[room_id]
+        if room['type'] != 'cinema':
+            return
+        
+        video_queue = room['video_queue']
+        current_index = room['current_video_index']
+        
+        # Check if there's a previous video
+        if current_index > 0:
+            room['current_video_index'] = current_index - 1
+            room['current_time'] = 0
+            room['playing'] = False
+            room['last_update'] = time.time()
+            
+            prev_video_data = {
+                'url': video_queue[room['current_video_index']],
+                'index': room['current_video_index'],
+                'queue': video_queue
+            }
+            
+            # Notify all users to load previous video
+            emit('load_next_video', prev_video_data, room=room_id)
+        else:
+            emit('error', {'message': 'Already at first video'})
+
+@socketio.on('remove_from_queue')
+def on_remove_from_queue(data):
+    socket_id = request.sid
+    room_id = data.get('room')
+    index = data.get('index')
+    
+    # Rate limit check
+    if not check_socket_rate_limit(socket_id, 'actions'):
+        emit('error', {'message': 'Too many requests. Please slow down.'})
+        return
+    
+    # Validate session and host permission
+    is_valid, user_info = validate_session_for_room(room_id)
+    if not is_valid or not user_info['is_host']:
+        emit('error', {'message': 'Only the host can remove videos'})
+        return
+    
+    with rooms_lock:
+        if room_id not in rooms:
+            return
+        
+        room = rooms[room_id]
+        if room['type'] != 'cinema':
+            return
+        
+        video_queue = room['video_queue']
+        current_index = room['current_video_index']
+        
+        # Validate index
+        if not isinstance(index, int) or index < 0 or index >= len(video_queue):
+            emit('error', {'message': 'Invalid video index'})
+            return
+        
+        # Don't allow removing the currently playing video
+        if index == current_index:
+            emit('error', {'message': 'Cannot remove currently playing video'})
+            return
+        
+        # Remove video from queue
+        video_queue.pop(index)
+        
+        # Adjust current index if needed
+        if index < current_index:
+            room['current_video_index'] = current_index - 1
+        
+        queue_data = {
+            'queue': video_queue,
+            'current_index': room['current_video_index']
+        }
+    
+    # Notify all users about queue update
+    emit('queue_updated', queue_data, room=room_id)
+    emit('success', {'message': 'Video removed from queue'})
 
 # Sports room specific events
 @socketio.on('match_selected')
