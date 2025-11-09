@@ -669,7 +669,7 @@ LOGIN_HTML = """
                 
                 <div class="input-group">
                     <label>Room Name <span class="optional-tag">(Optional)</span></label>
-                    <input type="text" name="room_name" placeholder="e.g., Friday Movie Night" maxlength="50">
+                    <input type="text" name="room_name" placeholder="example epic movie lets go" maxlength="50">
                 </div>
                 
                 <div class="input-group">
