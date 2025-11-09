@@ -668,6 +668,11 @@ LOGIN_HTML = """
                 </div>
                 
                 <div class="input-group">
+                    <label>Room Name <span class="optional-tag">(Optional)</span></label>
+                    <input type="text" name="room_name" placeholder="e.g., Friday Movie Night" maxlength="50">
+                </div>
+                
+                <div class="input-group">
                     <label>Room Password <span class="optional-tag">(Optional)</span></label>
                     <input type="text" name="password" placeholder="Leave blank for no password">
                 </div>
@@ -3274,7 +3279,7 @@ WATCH_HTML = """
         <div class="header">
             <div class="title-section">
                 <div class="logo-icon">{{ '🎬' if room_type == 'cinema' else '⚽' if room_type == 'sports' else '💻' }}</div>
-                <h1>{{ room_type }} Room</h1>
+                <h1>{{ room_name if room_type == 'cinema' and room_name else (room_type + ' Room') }}</h1>
                 <div class="room-id">{{ room_id }}</div>
             </div>
             <div class="header-right">
@@ -7575,6 +7580,13 @@ def index():
             if len(nickname) < 2:
                 return render_template_string(LOGIN_HTML, error='Nickname must be at least 2 characters')
             
+            # Get and validate room name
+            room_name = sanitize_message(request.form.get('room_name', '').strip())
+            if room_name and len(room_name) > 50:
+                return render_template_string(LOGIN_HTML, error='Room name too long (max 50 characters)')
+            if not room_name:
+                room_name = 'Cinema Room'  # Default name if not provided
+            
             # Get all video URLs from form (supports multiple)
             video_urls = request.form.getlist('video_url')
             
@@ -7612,6 +7624,7 @@ def index():
             rooms[room_id] = {
                 'type': 'cinema',
                 'password': password if password else None,
+                'room_name': room_name,  # Custom room name
                 'video_queue': validated_urls,  # List of video URLs
                 'current_video_index': 0,  # Current video in queue
                 'playing': False,
@@ -7774,20 +7787,21 @@ def join_room_route(room_id):
         room = rooms[room_id]
     
     needs_password = room['password'] is not None
+    room_display_name = room.get('room_name', room['type'].title() + ' Room') if room['type'] == 'cinema' else room['type'].title()
     
     if request.method == 'POST':
         nickname = sanitize_nickname(request.form.get('nickname', '').strip())
         if not nickname:
             return render_template_string(JOIN_HTML, 
                                          room_id=room_id,
-                                         room_type=room['type'].title(),
+                                         room_type=room_display_name,
                                          needs_password=needs_password,
                                          error='Nickname is required')
         
         if len(nickname) < 2:
             return render_template_string(JOIN_HTML, 
                                          room_id=room_id,
-                                         room_type=room['type'].title(),
+                                         room_type=room_display_name,
                                          needs_password=needs_password,
                                          error='Nickname must be at least 2 characters')
         
@@ -7797,7 +7811,7 @@ def join_room_route(room_id):
                 if user_data.get('nickname', '').lower() == nickname.lower():
                     return render_template_string(JOIN_HTML, 
                                                  room_id=room_id,
-                                                 room_type=room['type'].title(),
+                                                 room_type=room_display_name,
                                                  needs_password=needs_password,
                                                  error='This nickname is already taken in this room')
         
@@ -7808,7 +7822,7 @@ def join_room_route(room_id):
                 time.sleep(1)
                 return render_template_string(JOIN_HTML, 
                                              room_id=room_id,
-                                             room_type=room['type'].title(),
+                                             room_type=room_display_name,
                                              needs_password=needs_password,
                                              error='Wrong password')
         
@@ -7826,7 +7840,7 @@ def join_room_route(room_id):
     
     return render_template_string(JOIN_HTML, 
                                  room_id=room_id,
-                                 room_type=room['type'].title(),
+                                 room_type=room_display_name,
                                  needs_password=needs_password)
 
 @app.route('/watch/<room_id>')
@@ -7868,6 +7882,7 @@ def watch_room(room_id):
         template_vars['video_url'] = video_queue[current_index] if video_queue else ''
         template_vars['video_queue'] = video_queue
         template_vars['current_video_index'] = current_index
+        template_vars['room_name'] = room_data.get('room_name', 'Cinema Room')
         return render_template_string(WATCH_HTML, **template_vars)
     elif room_type == 'movie_room':
         return render_template_string(MOVIE_ROOM_HTML, **template_vars)
