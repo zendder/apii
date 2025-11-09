@@ -673,8 +673,14 @@ LOGIN_HTML = """
                 </div>
                 
                 <div class="input-group">
-                    <label>Embed Video URL <span class="optional-tag">(Direct link required)</span></label>
-                    <input type="url" name="video_url" placeholder="https://example.com/video.mp4 (must be direct video link)" required>
+                    <label>Video URLs <span class="optional-tag">(Add as many as you want - they'll play in order!)</span></label>
+                    <div id="video-urls-container">
+                        <div class="video-url-entry" style="display: flex; gap: 8px; margin-bottom: 8px;">
+                            <input type="url" name="video_url" placeholder="https://example.com/video1.mp4 (direct video link)" required style="flex: 1;">
+                            <button type="button" class="remove-video-btn" onclick="removeVideoUrl(this)" style="display: none; padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">✕</button>
+                        </div>
+                    </div>
+                    <button type="button" onclick="addVideoUrl()" style="width: 100%; padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; margin-top: 8px; font-weight: 500;">+ Add Another Video</button>
                 </div>
                 
                 <button type="submit">Create Cinema Room</button>
@@ -684,7 +690,8 @@ LOGIN_HTML = """
                     <div style="margin-bottom: 4px;">✅ Direct video files (.mp4, .webm, .ogg)</div>
                     <div style="margin-bottom: 4px;">✅ Example: https://jerrrycans-file.hf.space/rbxg/NV81Bgxdj67DifSxGR0g26uHf0Mzz1AvKLhW0ZVFJe6DXJPf/War%20of%20the%20Worlds_1754678270.mp4</div>
                     <div style="margin-bottom: 4px;">❌ YouTube, Vimeo, or streaming platform URLs</div>
-                    <div>❌ Embedded player URLs (iframe links)</div>
+                    <div style="margin-bottom: 4px;">❌ Embedded player URLs (iframe links)</div>
+                    <div style="margin-top: 8px; color: #a1a1aa;">💡 Videos will play sequentially - when one ends, the next one automatically starts!</div>
                 </div>
             </form>
             
@@ -804,6 +811,42 @@ LOGIN_HTML = """
                 form.classList.remove('active');
             });
             document.getElementById(type + '-form').classList.add('active');
+        }
+        
+        function addVideoUrl() {
+            const container = document.getElementById('video-urls-container');
+            const videoCount = container.querySelectorAll('.video-url-entry').length;
+            
+            const entry = document.createElement('div');
+            entry.className = 'video-url-entry';
+            entry.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px;';
+            
+            entry.innerHTML = `
+                <input type="url" name="video_url" placeholder="https://example.com/video${videoCount + 1}.mp4 (direct video link)" required style="flex: 1;">
+                <button type="button" class="remove-video-btn" onclick="removeVideoUrl(this)" style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">✕</button>
+            `;
+            
+            container.appendChild(entry);
+            updateRemoveButtons();
+        }
+        
+        function removeVideoUrl(btn) {
+            const entry = btn.closest('.video-url-entry');
+            entry.remove();
+            updateRemoveButtons();
+        }
+        
+        function updateRemoveButtons() {
+            const container = document.getElementById('video-urls-container');
+            const entries = container.querySelectorAll('.video-url-entry');
+            
+            // Show remove buttons only if there's more than one entry
+            entries.forEach((entry, index) => {
+                const removeBtn = entry.querySelector('.remove-video-btn');
+                if (removeBtn) {
+                    removeBtn.style.display = entries.length > 1 ? 'block' : 'none';
+                }
+            });
         }
     </script>
 </body>
@@ -7528,17 +7571,29 @@ def index():
             if len(nickname) < 2:
                 return render_template_string(LOGIN_HTML, error='Nickname must be at least 2 characters')
             
-            video_url = request.form.get('video_url', '').strip()
-            if not video_url:
-                return render_template_string(LOGIN_HTML, error='Video URL is required')
+            # Get all video URLs from form (supports multiple)
+            video_urls = request.form.getlist('video_url')
             
-            # Validate URL format
-            if not re.match(r'^https?://', video_url):
-                return render_template_string(LOGIN_HTML, error='Invalid video URL')
+            # Filter and validate video URLs
+            validated_urls = []
+            for video_url in video_urls:
+                video_url = video_url.strip()
+                if not video_url:
+                    continue
+                
+                # Validate URL format
+                if not re.match(r'^https?://', video_url):
+                    return render_template_string(LOGIN_HTML, error=f'Invalid video URL: {video_url[:50]}...')
+                
+                # Limit URL length
+                if len(video_url) > 2000:
+                    return render_template_string(LOGIN_HTML, error='Video URL too long')
+                
+                validated_urls.append(video_url)
             
-            # Limit URL length
-            if len(video_url) > 2000:
-                return render_template_string(LOGIN_HTML, error='Video URL too long')
+            # Ensure at least one video URL
+            if not validated_urls:
+                return render_template_string(LOGIN_HTML, error='At least one video URL is required')
             
             # Generate session ID for host
             session_id = str(uuid.uuid4())
@@ -7553,7 +7608,7 @@ def index():
             rooms[room_id] = {
                 'type': 'cinema',
                 'password': password if password else None,
-                'video_queue': [video_url],  # List of video URLs
+                'video_queue': validated_urls,  # List of video URLs
                 'current_video_index': 0,  # Current video in queue
                 'playing': False,
                 'current_time': 0,
