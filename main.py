@@ -675,9 +675,9 @@ LOGIN_HTML = """
                 <div class="input-group">
                     <label>Video URLs <span class="optional-tag">(Add as many as you want - they'll play in order!)</span></label>
                     <div id="video-urls-container">
-                        <div class="video-url-entry" style="display: flex; gap: 8px; margin-bottom: 8px;">
-                            <input type="url" name="video_url" placeholder="https://example.com/video1.mp4 (direct video link)" required style="flex: 1; padding: 12px 16px; background: #0a0a0a; border: 1px solid #27272a; border-radius: 8px; color: #e4e4e7; font-size: 14px; font-family: inherit;">
-                            <button type="button" class="remove-video-btn" onclick="removeVideoUrl(this)" style="display: none; padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">✕</button>
+                        <div class="video-url-entry" style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
+                            <input type="url" name="video_url" placeholder="https://example.com/video1.mp4 (direct video link)" required style="flex: 1; min-width: 0; padding: 12px 16px; background: #0a0a0a; border: 1px solid #27272a; border-radius: 8px; color: #e4e4e7; font-size: 14px; font-family: inherit;">
+                            <button type="button" class="remove-video-btn" onclick="removeVideoUrl(this)" style="display: none; padding: 6px; width: 32px; height: 32px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; flex-shrink: 0; line-height: 1;">✕</button>
                         </div>
                     </div>
                     <button type="button" onclick="addVideoUrl()" style="width: 100%; padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; margin-top: 8px; font-weight: 500;">+ Add Another Video</button>
@@ -819,11 +819,11 @@ LOGIN_HTML = """
             
             const entry = document.createElement('div');
             entry.className = 'video-url-entry';
-            entry.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px;';
+            entry.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: center;';
             
             entry.innerHTML = `
-                <input type="url" name="video_url" placeholder="https://example.com/video${videoCount + 1}.mp4 (direct video link)" required style="flex: 1; padding: 12px 16px; background: #0a0a0a; border: 1px solid #27272a; border-radius: 8px; color: #e4e4e7; font-size: 14px; font-family: inherit;">
-                <button type="button" class="remove-video-btn" onclick="removeVideoUrl(this)" style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">✕</button>
+                <input type="url" name="video_url" placeholder="https://example.com/video${videoCount + 1}.mp4 (direct video link)" required style="flex: 1; min-width: 0; padding: 12px 16px; background: #0a0a0a; border: 1px solid #27272a; border-radius: 8px; color: #e4e4e7; font-size: 14px; font-family: inherit;">
+                <button type="button" class="remove-video-btn" onclick="removeVideoUrl(this)" style="padding: 6px; width: 32px; height: 32px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; flex-shrink: 0; line-height: 1;">✕</button>
             `;
             
             container.appendChild(entry);
