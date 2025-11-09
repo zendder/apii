@@ -1927,8 +1927,10 @@ WATCH_HTML = """
         }
         
         .control-btn.small {
-            padding: 8px 12px;
+            padding: 8px 16px;
             font-size: 11px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         
         .queue-controls {
@@ -1960,10 +1962,12 @@ WATCH_HTML = """
             display: flex;
             gap: 8px;
             margin-bottom: 16px;
+            align-items: center;
         }
         
         .queue-add input {
-            flex: 1;
+            flex: 3;
+            min-width: 0;
             padding: 10px 12px;
             background: #18181b;
             border: 1px solid #27272a;
